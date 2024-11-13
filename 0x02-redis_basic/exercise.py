@@ -3,8 +3,11 @@
     - classes: Cache.
 """
 import redis
-from typing import Union
+from typing import Callable, TypeVar, Union
 import uuid
+
+
+T = TypeVar('T')
 
 
 class Cache():
@@ -22,3 +25,21 @@ class Cache():
         key = str(uuid.uuid4())
         self._redis.set(key, data)
         return key
+
+    def get(self, key: str, fn: Callable[[str], T] = None) -> T:
+        """Get value associated with given key;
+        Convert data using given function, if any.
+        """
+        if fn:
+            return fn(self._redis.get(key))
+        return self._redis.get(key)
+
+    def get_str(key: str) -> str:
+        """Get value as a string.
+        """
+        return self.get(key, str)
+
+    def get_int(key: str) -> int:
+        """Get value as an integer.
+        """
+        return self.get(key, int)
