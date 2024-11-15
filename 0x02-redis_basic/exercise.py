@@ -18,7 +18,7 @@ def count_calls(method: Callable) -> Callable:
     def wrapper(obj, *args, **kwargs):
         """Decorator function to count calls to method.
         """
-        obj._redis.incrby(method.__qualname__)
+        obj._redis.incr(method.__qualname__)
         return method(obj, *args, **kwargs)
     return wrapper
 
