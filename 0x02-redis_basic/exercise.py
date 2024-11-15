@@ -11,12 +11,26 @@ import uuid
 T = TypeVar('T')
 
 
+def call_history(method: Callable) -> Callable:
+    """Store calls to method with its input and output.
+    """
+    @wraps(method)
+    def wrapper(self, data):
+        """Wrapper function
+        """
+        output = method(self, data)
+        self._redis.rpush(method.__qualname__ + ":inputs", str(data))
+        self._redis.rpush(method.__qualname__ + ":outputs", str(output))
+        return output
+    return wrapper
+
+
 def count_calls(method: Callable) -> Callable:
-    """Wrapper generator.
+    """Count calls to method.
     """
     @wraps(method)
     def wrapper(self, *args, **kwargs):
-        """Decorator function to count calls to method.
+        """Wrapper function.
         """
         self._redis.incr(method.__qualname__)
         return method(self, *args, **kwargs)
@@ -32,6 +46,7 @@ class Cache():
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Store given data using random key.
