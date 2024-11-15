@@ -15,10 +15,11 @@ def call_history(method: Callable) -> Callable:
     """Store calls to method with its input and output.
     """
     @wraps(method)
-    def wrapper(self, data):
+    def wrapper(self, *args):
         """Wrapper function
         """
-        output = method(self, data)
+        data = tuple(data for data in args)
+        output = method(self, *args)
         self._redis.rpush(method.__qualname__ + ":inputs", str(data))
         self._redis.rpush(method.__qualname__ + ":outputs", str(output))
         return output
