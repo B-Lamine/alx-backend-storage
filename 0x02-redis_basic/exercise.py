@@ -2,12 +2,25 @@
 """Module contains:
     - classes: Cache.
 """
+from functools import wraps
 import redis
 from typing import Callable, TypeVar, Union
 import uuid
 
 
 T = TypeVar('T')
+
+
+def count_calls(method: Callable) -> Callable:
+    """Wrapper generator.
+    """
+    @wraps(method)
+    def wrapper(obj, *args, **kwargs):
+        """Decorator function to count calls to method.
+        """
+        obj._redis.incrby(method.__qualname__)
+        return method(obj, *args, **kwargs)
+    return wrapper
 
 
 class Cache():
@@ -19,6 +32,7 @@ class Cache():
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Store given data using random key.
         """
