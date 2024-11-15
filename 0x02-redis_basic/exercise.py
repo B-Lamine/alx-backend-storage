@@ -15,11 +15,11 @@ def count_calls(method: Callable) -> Callable:
     """Wrapper generator.
     """
     @wraps(method)
-    def wrapper(obj, *args, **kwargs):
+    def wrapper(self, *args, **kwargs):
         """Decorator function to count calls to method.
         """
-        obj._redis.incr(method.__qualname__)
-        return method(obj, *args, **kwargs)
+        self._redis.incr(method.__qualname__)
+        return method(self, *args, **kwargs)
     return wrapper
 
 
