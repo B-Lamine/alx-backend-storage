@@ -38,6 +38,22 @@ def count_calls(method: Callable) -> Callable:
     return wrapper
 
 
+def replay(method: Callable) -> None:
+    """
+    """
+    qualname = method.__qualname__
+    instance = method.__self__
+    call_count = instance._redis.get(qualname).decode("utf-8")
+    inputs = [inpt.decode("utf-8") for inpt in
+              instance._redis.lrange(qualname + ":inputs", 0, call_count)]
+    outputs = [outpt.decode("utf-8") for outpt in
+               instance._redis.lrange(qualname + ":outputs", 0, call_count)]
+    print("{} was called {} times:".format(qualname, call_count))
+    for i, o in zip(inputs, outputs):
+        print(qualname + '(*' + i + ')' + " -> " + o)
+    return None
+
+
 class Cache():
     """Redis cache.
     """
